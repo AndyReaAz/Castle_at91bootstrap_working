@@ -129,6 +129,14 @@ config HW_BANNER
 	help
 	  The banner displayed on serial port
 
+config QUIET_SUCCESS
+	bool "Suppress normal successful boot messages"
+	default n
+	help
+	  Suppress routine console output on a successful bootstrap while
+	  retaining fatal load failure messages. Useful for fast production boot.
+
+
 endmenu
 
 source "device/Config.in"
