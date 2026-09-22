@@ -33,7 +33,7 @@ static inline void dbg_hexdump(const unsigned char *buf,
 #endif
 
 #ifdef CONFIG_QUIET_SUCCESS
-#define console_printf(fmt_str, args...) 0
+#define console_printf(fmt_str, args...) do { } while (0)
 #else
 #define console_printf(fmt_str, args...) \
 	dbg_printf(fmt_str , ## args)
