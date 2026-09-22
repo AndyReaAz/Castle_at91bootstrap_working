@@ -24,6 +24,11 @@
 #define MANUFACTURER_ID_ATMEL		0x1f
 #define MANUFACTURER_ID_MICRON		0x20
 #define MANUFACTURER_ID_WINBOND		0xef
+#define MANUFACTURER_ID_MACRONIX	0xc2
+
+/* MX25V1635F JEDEC ID: C2 23 15 (16 Mbit / 2 MiB). */
+#define MX25V1635F_MEMORY_TYPE		0x23
+#define MX25V1635F_MEMORY_DENSITY	0x15
 
 /* Family Code */
 #define DF_FAMILY_AT26F			0x00
@@ -551,6 +556,18 @@ static int df_at25_desc_init(struct dataflash_descriptor *df_desc)
 	return 0;
 }
 
+static int df_mx25v1635f_desc_init(struct dataflash_descriptor *df_desc)
+{
+	/* MX25V1635F: 16 Mbit / 2 MiB, 256-byte pages. */
+	df_desc->is_power_2 = 1;
+	df_desc->pages = 8192;
+	df_desc->page_size = 256;
+	df_desc->page_offset = 0;
+	df_desc->is_spinor = 1;
+
+	return 0;
+}
+
 static int df_desc_init(struct dataflash_descriptor *df_desc, unsigned char vendor,
 			unsigned char family)
 {
@@ -622,6 +639,17 @@ static int dataflash_probe_atmel(struct dataflash_descriptor *df_desc)
 		dbg_info(" %x", *p++);
 	dbg_info("\n");
 #endif
+
+	if (dev_id[0] == MANUFACTURER_ID_MACRONIX) {
+		if (dev_id[1] != MX25V1635F_MEMORY_TYPE ||
+		    dev_id[2] != MX25V1635F_MEMORY_DENSITY) {
+			dbg_info("SF: Unsupported Macronix SPI NOR ID: %x %x %x\n",
+				 dev_id[0], dev_id[1], dev_id[2]);
+			return -1;
+		}
+
+		return df_mx25v1635f_desc_init(df_desc);
+	}
 
 	if (dev_id[0] != MANUFACTURER_ID_ATMEL &&
 	    dev_id[0] != MANUFACTURER_ID_WINBOND &&
