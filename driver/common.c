@@ -107,6 +107,7 @@ void init_load_image(struct image_info *image)
 
 void load_image_done(int retval)
 {
+#ifndef CONFIG_QUIET_SUCCESS
 	char *media;
 
 #ifndef CONFIG_LOAD_SW
@@ -123,7 +124,6 @@ void load_image_done(int retval)
 	media = NULL;
 #endif
 
-#ifndef CONFIG_QUIET_SUCCESS
 	if (media)
 		usart_puts(media);
 
