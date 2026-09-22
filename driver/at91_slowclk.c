@@ -45,9 +45,10 @@ static void slowclk_wait_osc32_stable(void)
 
 	/*
 	 * Wait 32768 Hz Startup Time for clock stabilization (software loop)
-	 * wait about 1s (1300ms)
+	 * SAMA5D2 electrical characteristics specify a 1200 ms maximum
+	 * startup time for the 32.768 kHz crystal oscillator.
 	 */
-	wait_interval_timer(1300);
+	wait_interval_timer(1200);
 }
 
 #if !defined(CONFIG_SAMA5D4) && !defined(CONFIG_SAMA5D2) \
