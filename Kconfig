@@ -136,6 +136,13 @@ config QUIET_SUCCESS
 	  Suppress routine console output on a successful bootstrap while
 	  retaining fatal load failure messages. Useful for fast production boot.
 
+config BOOT_TIMING_MARKERS
+	bool "Emit boot phase timing markers"
+	default n
+	help
+	  Emit a small number of serial markers around SD/MMC and FAT loading
+	  phases. Intended for boot-time measurement only.
+
 
 endmenu
 
