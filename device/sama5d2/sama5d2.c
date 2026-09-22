@@ -519,6 +519,7 @@ void hw_init(void)
 	matrix_init();
 #endif
 	initialize_dbgu();
+	boot_timing_marker("uart init done");
 
 	timer_init();
 
