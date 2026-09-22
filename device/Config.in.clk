@@ -87,6 +87,15 @@ config SCLK_BYPASS
 	  If this option is disabled, the SoC expects a crystal oscillator
 	  that needs driving on both XIN32 and XOUT32 lines.
 
+config DEFER_SLOW_CLOCK_SWITCH
+	bool "Defer 32kHz crystal selection to next-stage bootloader"
+	depends on SCLK && SAMA5D2
+	default n
+	help
+	  Leave the system running from the internal RC slow clock and let the
+	  next-stage bootloader select the already-running 32.768 kHz crystal.
+	  This allows crystal startup time to overlap useful second-stage work.
+
 endmenu
 
 config ALLOW_CRYSTAL_12_000MHZ
