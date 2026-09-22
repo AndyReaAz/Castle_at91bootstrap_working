@@ -28,6 +28,7 @@ static int sdcard_loadimage(char *filename, BYTE *dest)
 	FRESULT	fret;
 	int	ret;
 
+	boot_timing_marker("fat open start");
 	fret = f_open(&file, filename, FA_OPEN_EXISTING | FA_READ);
 	if (fret != FR_OK) {
 		dbg_info("*** FATFS: f_open, filename: [%s]: error\n", filename);
@@ -35,12 +36,15 @@ static int sdcard_loadimage(char *filename, BYTE *dest)
 		goto open_fail;
 	}
 
+	boot_timing_marker("fat open done");
+	boot_timing_marker("fat read start");
 	do {
 		byte_read = 0;
 		fret = f_read(&file, (void *)(dest), byte_to_read, &byte_read);
 		dest += byte_to_read;
 	} while (byte_read >= byte_to_read);
 
+	boot_timing_marker("fat read done");
 	if (fret != FR_OK) {
 		dbg_info("*** FATFS: f_read: error\n");
 		 ret = -1;
@@ -105,6 +109,7 @@ int load_sdcard(struct image_info *image)
 	int	ret;
 	static bool initialized = false;
 
+	boot_timing_marker("load_sdcard start");
 	if (!initialized) {
 #ifdef CONFIG_AT91_MCI
 #if defined(CONFIG_AT91_MCI0)
@@ -131,7 +136,9 @@ int load_sdcard(struct image_info *image)
 #endif
 
 	/* mount fs */
+	boot_timing_marker("fat mount start");
 	fret = f_mount(0, &fs);
+	boot_timing_marker("fat mount done");
 	if (fret != FR_OK) {
 		dbg_info("*** FATFS: f_mount mount error **\n");
 		return -1;
