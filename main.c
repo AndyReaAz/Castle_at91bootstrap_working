@@ -50,7 +50,7 @@ int main(void)
 #endif
 
 #if defined(CONFIG_SCLK)
-#if !defined(CONFIG_SCLK_BYPASS)
+#if !defined(CONFIG_SCLK_BYPASS) && !defined(CONFIG_DEFER_SLOW_CLOCK_SWITCH)
 	slowclk_enable_osc32();
 #endif
 #elif defined(CONFIG_SCLK_INTRC)
@@ -146,7 +146,7 @@ int main(void)
 #endif
 	load_image_done(ret);
 
-#ifdef CONFIG_SCLK
+#if defined(CONFIG_SCLK) && !defined(CONFIG_DEFER_SLOW_CLOCK_SWITCH)
 	boot_timing_marker("slow clock switch start");
 #ifdef CONFIG_SCLK_BYPASS
 	slowclk_switch_osc32_bypass();
@@ -154,6 +154,8 @@ int main(void)
 	slowclk_switch_osc32();
 #endif
 	boot_timing_marker("slow clock switch done");
+#elif defined(CONFIG_DEFER_SLOW_CLOCK_SWITCH)
+	boot_timing_marker("slow clock switch deferred");
 #endif
 
 #if defined(CONFIG_LOAD_OPTEE)
