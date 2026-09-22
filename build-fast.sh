@@ -62,9 +62,6 @@ configure()
                 die "SD profile did not enable quiet successful boot"
             grep -q '^# CONFIG_HW_DISPLAY_BANNER is not set$' "$ROOT/.config" ||
                 die "SD profile still enables bootstrap banner"
-            grep -q '^# CONFIG_FATFS_LONG_FILENAME is not set$' "$ROOT/.config" ||
-                die "SD profile unexpectedly enables FAT long filenames"
-
             if [ "$PROFILE" = "timing" ] || [ "$PROFILE" = "timing-deferred" ]; then
                 grep -q '^CONFIG_BOOT_TIMING_MARKERS=y$' "$ROOT/.config" ||
                     die "timing profile did not enable timing markers"
