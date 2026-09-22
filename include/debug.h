@@ -25,7 +25,11 @@ extern void dbg_hexdump(const unsigned char *buf,
 
 static inline int dbg_printf(const char *fmt_str, ...)
 {
+#ifdef CONFIG_QUIET_SUCCESS
+	(void)fmt_str;
+#else
 	usart_puts(fmt_str);
+#endif
 	return 0;
 }
 static inline void dbg_hexdump(const unsigned char *buf,
