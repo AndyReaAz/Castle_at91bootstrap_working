@@ -123,6 +123,7 @@ void load_image_done(int retval)
 	media = NULL;
 #endif
 
+#ifndef CONFIG_QUIET_SUCCESS
 	if (media)
 		usart_puts(media);
 
@@ -133,6 +134,7 @@ void load_image_done(int retval)
 		usart_puts("Done to load image\n");
 #endif
 	}
+#endif
 	if (retval == -1) {
 		usart_puts("Failed to load image\n");
 		while(1);
