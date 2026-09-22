@@ -147,11 +147,13 @@ int main(void)
 	load_image_done(ret);
 
 #ifdef CONFIG_SCLK
+	boot_timing_marker("slow clock switch start");
 #ifdef CONFIG_SCLK_BYPASS
 	slowclk_switch_osc32_bypass();
 #else
 	slowclk_switch_osc32();
 #endif
+	boot_timing_marker("slow clock switch done");
 #endif
 
 #if defined(CONFIG_LOAD_OPTEE)
