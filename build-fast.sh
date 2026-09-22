@@ -77,7 +77,24 @@ configure()
                 die "NOR profile did not enable CONFIG_DATAFLASH"
             grep -q '^CONFIG_SPI=y$' "$ROOT/.config" ||
                 die "NOR profile did not enable CONFIG_SPI"
-            grep -q '^CONFIG_SPI_BUS=1
+            grep -q '^CONFIG_SPI_BUS=1$' "$ROOT/.config" ||
+                die "NOR profile is not using SPI bus 1"
+            grep -q '^CONFIG_SPI_CLK=50000000$' "$ROOT/.config" ||
+                die "NOR SPI clock request changed unexpectedly"
+            # Ratified 2 MiB NOR map:
+            #   0x000000-0x007fff AT91Bootstrap
+            #   0x008000-0x13ffff U-Boot partition
+            #   0x140000-0x14ffff env A erase slot
+            #   0x150000-0x15ffff env B erase slot
+            #   0x160000-0x1fffff spare
+            grep -q '^CONFIG_IMG_ADDRESS="0x00008000"$' "$ROOT/.config" ||
+                die "NOR U-Boot address changed unexpectedly"
+            # IMG_SIZE is the fixed amount bootstrap reads from NOR into RAM.
+            # Keep this explicit; deployment packaging separately checks that
+            # the actual u-boot.bin fits both this load window and its partition.
+            grep -q '^CONFIG_IMG_SIZE="0x000a0000"$' "$ROOT/.config" ||
+                die "NOR U-Boot load size changed unexpectedly"
+            ;;
     esac
 
     grep -q '^CONFIG_JUMP_ADDR="0x23f00000"$' "$ROOT/.config" ||
@@ -98,208 +115,6 @@ build_image()
         [ "$BOOT_BYTES" -le $((0x8000)) ] ||
             die "NOR boot.bin exceeds 32 KiB AT91Bootstrap partition: $BOOT_BYTES bytes"
     fi
-
-    echo
-    echo "NextGen AT91Bootstrap build complete:"
-    echo "  profile = $PROFILE"
-    echo "  output  = $BOOT"
-    ls -lh "$BOOT"
-    sha256sum "$BOOT"
-}
-
-case "$ACTION" in
-    config)
-        configure
-        ;;
-    build)
-        configure
-        build_image
-        ;;
-    rebuild)
-        rm -rf "$OUT"
-        configure
-        build_image
-        ;;
-    clean)
-        rm -rf "$OUT"
-        echo "Removed $OUT"
-        ;;
-    *)
-        echo "Usage: $0 [build|rebuild|config|clean] [sd|timing|timing-deferred|nor]" >&2
-        exit 2
-        ;;
-esac
- "$ROOT/.config" ||
-                die "NOR profile is not using SPI bus 1"
-            grep -q '^CONFIG_SPI_CLK=50000000
-    esac
-
-    grep -q '^CONFIG_JUMP_ADDR="0x23f00000"$' "$ROOT/.config" ||
-        die "unexpected U-Boot jump address"
-
-    echo "Configured NextGen AT91Bootstrap profile: $PROFILE"
-}
-
-build_image()
-{
-    make_bootstrap -j"$JOBS" all
-
-    BOOT="$OUT/binaries/boot.bin"
-    [ -e "$BOOT" ] || die "boot.bin was not produced at $BOOT"
-
-    echo
-    echo "NextGen AT91Bootstrap build complete:"
-    echo "  profile = $PROFILE"
-    echo "  output  = $BOOT"
-    ls -lh "$BOOT"
-    sha256sum "$BOOT"
-}
-
-case "$ACTION" in
-    config)
-        configure
-        ;;
-    build)
-        configure
-        build_image
-        ;;
-    rebuild)
-        rm -rf "$OUT"
-        configure
-        build_image
-        ;;
-    clean)
-        rm -rf "$OUT"
-        echo "Removed $OUT"
-        ;;
-    *)
-        echo "Usage: $0 [build|rebuild|config|clean] [sd|timing|timing-deferred|nor]" >&2
-        exit 2
-        ;;
-esac
- "$ROOT/.config" ||
-                die "NOR SPI clock request changed unexpectedly"
-            # Ratified 2 MiB NOR map:
-            #   0x000000-0x007fff AT91Bootstrap
-            #   0x008000-0x13ffff U-Boot partition
-            #   0x140000-0x14ffff env A erase slot
-            #   0x150000-0x15ffff env B erase slot
-            #   0x160000-0x1fffff spare
-            grep -q '^CONFIG_IMG_ADDRESS="0x00008000"
-    esac
-
-    grep -q '^CONFIG_JUMP_ADDR="0x23f00000"$' "$ROOT/.config" ||
-        die "unexpected U-Boot jump address"
-
-    echo "Configured NextGen AT91Bootstrap profile: $PROFILE"
-}
-
-build_image()
-{
-    make_bootstrap -j"$JOBS" all
-
-    BOOT="$OUT/binaries/boot.bin"
-    [ -e "$BOOT" ] || die "boot.bin was not produced at $BOOT"
-
-    echo
-    echo "NextGen AT91Bootstrap build complete:"
-    echo "  profile = $PROFILE"
-    echo "  output  = $BOOT"
-    ls -lh "$BOOT"
-    sha256sum "$BOOT"
-}
-
-case "$ACTION" in
-    config)
-        configure
-        ;;
-    build)
-        configure
-        build_image
-        ;;
-    rebuild)
-        rm -rf "$OUT"
-        configure
-        build_image
-        ;;
-    clean)
-        rm -rf "$OUT"
-        echo "Removed $OUT"
-        ;;
-    *)
-        echo "Usage: $0 [build|rebuild|config|clean] [sd|timing|timing-deferred|nor]" >&2
-        exit 2
-        ;;
-esac
- "$ROOT/.config" ||
-                die "NOR U-Boot address changed unexpectedly"
-            # IMG_SIZE is the amount bootstrap reads into RAM, not the full
-            # 0x138000-byte U-Boot partition. Keep it explicit and below the
-            # partition boundary; the SD/NOR image packager checks the actual
-            # u-boot.bin size against that boundary.
-            grep -q '^CONFIG_IMG_SIZE="0x000a0000"
-    esac
-
-    grep -q '^CONFIG_JUMP_ADDR="0x23f00000"$' "$ROOT/.config" ||
-        die "unexpected U-Boot jump address"
-
-    echo "Configured NextGen AT91Bootstrap profile: $PROFILE"
-}
-
-build_image()
-{
-    make_bootstrap -j"$JOBS" all
-
-    BOOT="$OUT/binaries/boot.bin"
-    [ -e "$BOOT" ] || die "boot.bin was not produced at $BOOT"
-
-    echo
-    echo "NextGen AT91Bootstrap build complete:"
-    echo "  profile = $PROFILE"
-    echo "  output  = $BOOT"
-    ls -lh "$BOOT"
-    sha256sum "$BOOT"
-}
-
-case "$ACTION" in
-    config)
-        configure
-        ;;
-    build)
-        configure
-        build_image
-        ;;
-    rebuild)
-        rm -rf "$OUT"
-        configure
-        build_image
-        ;;
-    clean)
-        rm -rf "$OUT"
-        echo "Removed $OUT"
-        ;;
-    *)
-        echo "Usage: $0 [build|rebuild|config|clean] [sd|timing|timing-deferred|nor]" >&2
-        exit 2
-        ;;
-esac
- "$ROOT/.config" ||
-                die "NOR U-Boot load size changed unexpectedly"
-            ;;
-    esac
-
-    grep -q '^CONFIG_JUMP_ADDR="0x23f00000"$' "$ROOT/.config" ||
-        die "unexpected U-Boot jump address"
-
-    echo "Configured NextGen AT91Bootstrap profile: $PROFILE"
-}
-
-build_image()
-{
-    make_bootstrap -j"$JOBS" all
-
-    BOOT="$OUT/binaries/boot.bin"
-    [ -e "$BOOT" ] || die "boot.bin was not produced at $BOOT"
 
     echo
     echo "NextGen AT91Bootstrap build complete:"
