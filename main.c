@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "common.h"
+#include "debug.h"
 #include "board.h"
 #include "usart.h"
 #include "slowclk.h"
