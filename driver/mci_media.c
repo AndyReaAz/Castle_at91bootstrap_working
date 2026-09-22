@@ -1585,6 +1585,7 @@ int sdcard_initialize(void)
 	struct sd_host *host;
 	int ret;
 
+	boot_timing_marker("sdcard initialize start");
 	init_sdcard_struct(sdcard);
 
 #ifdef CONFIG_AT91_MCI
@@ -1601,11 +1602,13 @@ int sdcard_initialize(void)
 		if (ret)
 			return ret;
 	}
+	boot_timing_marker("sdcard host init done");
 
 	/* Card Indentification Mode */
 	ret = sdcard_identification(sdcard);
 	if (ret)
 		return ret;
+	boot_timing_marker("sdcard identification done");
 
 	if (sdcard->card_type == CARD_TYPE_SD)
 		ret = sd_initialization(sdcard);
@@ -1613,6 +1616,7 @@ int sdcard_initialize(void)
 		ret = mmc_initialization(sdcard);
 	if (ret)
 		return ret;
+	boot_timing_marker("sdcard mode setup done");
 
 	return 0;
 }
