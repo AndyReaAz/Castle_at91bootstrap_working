@@ -93,6 +93,12 @@ build_image()
     BOOT="$OUT/binaries/boot.bin"
     [ -e "$BOOT" ] || die "boot.bin was not produced at $BOOT"
 
+    if [ "$PROFILE" = "nor" ]; then
+        BOOT_BYTES="$(wc -c < "$BOOT" | tr -d '[:space:]')"
+        [ "$BOOT_BYTES" -le $((0x8000)) ] ||
+            die "NOR boot.bin exceeds 32 KiB AT91Bootstrap partition: $BOOT_BYTES bytes"
+    fi
+
     echo
     echo "NextGen AT91Bootstrap build complete:"
     echo "  profile = $PROFILE"
