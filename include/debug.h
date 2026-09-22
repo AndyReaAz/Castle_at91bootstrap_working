@@ -55,4 +55,10 @@ static inline void dbg_hexdump(const unsigned char *buf,
 #define dbg_very_loud(fmt_str, arg...)		\
 	dbg_log(DEBUG_VERY_LOUD, fmt_str , ## arg)
 
+#ifdef CONFIG_BOOT_TIMING_MARKERS
+#define boot_timing_marker(text) usart_puts("TIMING: " text "\n")
+#else
+#define boot_timing_marker(text) do { } while (0)
+#endif
+
 #endif /* #ifndef __DEBUG_H__ */
