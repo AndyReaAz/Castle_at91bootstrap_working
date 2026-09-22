@@ -89,7 +89,9 @@
 /	1    - ASCII only (Valid for non LFN cfg.)
 */
 
-/* NextGen/bootstrap image names are 8.3; keep FatFs minimal. */
+#ifdef CONFIG_FATFS_LONG_FILENAME
+#define CONFIG_LONG_FILENAME
+#endif
 
 #ifdef CONFIG_LONG_FILENAME
 #define	_USE_LFN	1	/* 0 to 3 */
