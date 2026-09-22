@@ -32,8 +32,12 @@ static inline void dbg_hexdump(const unsigned char *buf,
 			       unsigned int size, unsigned int width) { }
 #endif
 
+#ifdef CONFIG_QUIET_SUCCESS
+#define console_printf(fmt_str, args...) 0
+#else
 #define console_printf(fmt_str, args...) \
 	dbg_printf(fmt_str , ## args)
+#endif
 
 #define dbg_log(level, fmt_str, args...) \
 	({ \
