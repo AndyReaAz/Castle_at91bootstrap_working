@@ -175,6 +175,11 @@ config FATFS
 	depends on SDCARD
 	default y if SDCARD
 
+config FATFS_LONG_FILENAME
+	bool "Enable FAT long filename support"
+	depends on FATFS
+	default y
+
 endmenu
 
 if DATAFLASH
