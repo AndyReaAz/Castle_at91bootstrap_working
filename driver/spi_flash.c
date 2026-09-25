@@ -673,6 +673,7 @@ static int nextgen_update_uboot_length(struct dataflash_descriptor *df_desc,
 	unsigned char trailer[16];
 	unsigned int length;
 	unsigned int length_inv;
+	unsigned int version;
 	int ret;
 
 	ret = read_array(df_desc, CONFIG_UBOOT_LENGTH_TRAILER_ADDRESS,
@@ -692,8 +693,13 @@ static int nextgen_update_uboot_length(struct dataflash_descriptor *df_desc,
 		     ((unsigned int)trailer[9] << 8) |
 		     ((unsigned int)trailer[10] << 16) |
 		     ((unsigned int)trailer[11] << 24);
+	version = ((unsigned int)trailer[12]) |
+		  ((unsigned int)trailer[13] << 8) |
+		  ((unsigned int)trailer[14] << 16) |
+		  ((unsigned int)trailer[15] << 24);
 
-	if ((length ^ length_inv) != 0xffffffffU ||
+	if (version != 1U ||
+	    (length ^ length_inv) != 0xffffffffU ||
 	    !length ||
 	    length > CONFIG_UBOOT_MAX_SIZE ||
 	    image->offset + length > CONFIG_UBOOT_LENGTH_TRAILER_ADDRESS) {
