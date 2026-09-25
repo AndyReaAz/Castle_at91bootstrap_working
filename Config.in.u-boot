@@ -19,7 +19,25 @@ config IMG_SIZE
 	depends on DATAFLASH || FLASH || NANDFLASH
 	default	"0x000a0000"
 	help
-	  at91bootstrap will copy this size of U-Boot image
+	  Fallback amount copied when no valid image-length trailer is present.
+
+config UBOOT_LENGTH_TRAILER
+	bool "Read U-Boot length trailer"
+	depends on LOAD_UBOOT && DATAFLASH
+	default n
+	help
+	  Read a small fixed trailer from SPI NOR before copying U-Boot so the
+	  bootstrap can copy only the bytes that actually belong to u-boot.bin.
+
+config UBOOT_LENGTH_TRAILER_ADDRESS
+	hex "U-Boot length trailer address"
+	depends on UBOOT_LENGTH_TRAILER
+	default 0x0013fff0
+
+config UBOOT_MAX_SIZE
+	hex "Maximum accepted U-Boot image size"
+	depends on UBOOT_LENGTH_TRAILER
+	default 0x00137ff0
 
 config JUMP_ADDR
 	string "The External Ram Address to Load U-Boot Image"
