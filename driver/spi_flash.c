@@ -666,6 +666,47 @@ static int dataflash_probe_atmel(struct dataflash_descriptor *df_desc)
 	return 0;
 }
 
+static int nextgen_update_uboot_length(struct dataflash_descriptor *df_desc,
+				       struct image_info *image)
+{
+#ifdef CONFIG_UBOOT_LENGTH_TRAILER
+	unsigned char trailer[16];
+	unsigned int length;
+	unsigned int length_inv;
+	int ret;
+
+	ret = read_array(df_desc, CONFIG_UBOOT_LENGTH_TRAILER_ADDRESS,
+			 sizeof(trailer), trailer);
+	if (ret)
+		return 0;
+
+	if (trailer[0] != 'N' || trailer[1] != 'G' ||
+	    trailer[2] != 'U' || trailer[3] != 'B')
+		return 0;
+
+	length = ((unsigned int)trailer[4]) |
+		 ((unsigned int)trailer[5] << 8) |
+		 ((unsigned int)trailer[6] << 16) |
+		 ((unsigned int)trailer[7] << 24);
+	length_inv = ((unsigned int)trailer[8]) |
+		     ((unsigned int)trailer[9] << 8) |
+		     ((unsigned int)trailer[10] << 16) |
+		     ((unsigned int)trailer[11] << 24);
+
+	if ((length ^ length_inv) != 0xffffffffU ||
+	    !length ||
+	    length > CONFIG_UBOOT_MAX_SIZE ||
+	    image->offset + length > CONFIG_UBOOT_LENGTH_TRAILER_ADDRESS) {
+		dbg_info("SF: Ignoring invalid U-Boot length trailer\n");
+		return 0;
+	}
+
+	image->length = length;
+	dbg_info("SF: U-Boot trailer selects %x bytes\n", image->length);
+#endif
+	return 0;
+}
+
 int spi_flash_loadimage(struct image_info *image)
 {
 	struct dataflash_descriptor	df_descriptor;
@@ -706,6 +747,8 @@ int spi_flash_loadimage(struct image_info *image)
 		return -1;
 
 	image->length = length;
+#elif defined(CONFIG_LOAD_UBOOT)
+	nextgen_update_uboot_length(df_desc, image);
 #endif
 
 	dbg_info("SF: Copy %x bytes from %x to %x\n",
