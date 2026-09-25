@@ -150,6 +150,25 @@ source "device/Config.in"
 
 source "driver/Config.in.driver"
 
+config NEXTGEN_BOOT_FUSE_ENSURE
+	bool "Ensure Castle NextGen production boot fuse"
+	depends on SAMA5D2 && LOAD_AND_JUMP
+	default n
+	help
+	  Check the SAMA5D27 boot-configuration fuse on every NextGen bootstrap.
+
+	  If it already equals the fixed production value 0x00060b3f, boot
+	  continues without touching PA29/VPP.  If bits are missing, program the
+	  fuse only when the current OTP 1-bits are a subset of that exact target,
+	  so the final OTP word can be exactly 0x00060b3f.
+
+	  If the silicon is unexpected, an incompatible OTP bit is already set,
+	  programming fails, or readback is not exact, do not attempt any further
+	  fuse change and continue the ordinary boot with a console warning.
+
+	  This option is intended to remain enabled in all Castle NextGen SD and
+	  NOR AT91Bootstrap profiles.
+
 config DUAL_BOOT_VERSION
 	string "Dual Boot Version Number"
 	depends on SAMA7D65

@@ -17,6 +17,9 @@
 #include "autoconf.h"
 #include "optee.h"
 #include "sfr_aicredir.h"
+#ifdef CONFIG_NEXTGEN_BOOT_FUSE_ENSURE
+#include "nextgen_fuse.h"
+#endif
 #ifdef CONFIG_FAST_BOOT
 #include "fast_boot.h"
 #endif
@@ -42,8 +45,23 @@ int main(void)
 	struct image_info image;
 #endif
 	int ret = 0;
+#ifdef CONFIG_NEXTGEN_BOOT_FUSE_ENSURE
+	int nextgen_fuse_status;
+
+	/*
+	 * Do the OTP check while execution is still entirely in SRAM and before
+	 * DDR is configured.  lowlevel_clock_init() has already established the
+	 * external MAINCK source by the time main() is entered.
+	 */
+	nextgen_fuse_status = nextgen_boot_fuse_ensure();
+#endif
 
 	hw_init();
+
+#ifdef CONFIG_NEXTGEN_BOOT_FUSE_ENSURE
+	/* UART is now configured for the normal NextGen clock plan. */
+	nextgen_boot_fuse_report(nextgen_fuse_status);
+#endif
 
 #ifdef CONFIG_OCMS_STATIC
 	ocms_init_keys();

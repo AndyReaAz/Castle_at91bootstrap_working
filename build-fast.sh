@@ -100,6 +100,9 @@ configure()
     grep -q '^CONFIG_JUMP_ADDR="0x23f00000"$' "$ROOT/.config" ||
         die "unexpected U-Boot jump address"
 
+    grep -q '^CONFIG_NEXTGEN_BOOT_FUSE_ENSURE=y$' "$ROOT/.config" ||
+        die "NextGen profile did not enable boot fuse guard"
+
     echo "Configured NextGen AT91Bootstrap profile: $PROFILE"
 }
 
