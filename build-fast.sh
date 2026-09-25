@@ -62,6 +62,7 @@ configure()
                 die "SD profile did not enable quiet successful boot"
             grep -q '^# CONFIG_HW_DISPLAY_BANNER is not set$' "$ROOT/.config" ||
                 die "SD profile still enables bootstrap banner"
+
             if [ "$PROFILE" = "timing" ] || [ "$PROFILE" = "timing-deferred" ]; then
                 grep -q '^CONFIG_BOOT_TIMING_MARKERS=y$' "$ROOT/.config" ||
                     die "timing profile did not enable timing markers"
@@ -81,244 +82,23 @@ configure()
                 die "NOR profile is not using SPI bus 1"
             grep -q '^CONFIG_SPI_CLK=50000000$' "$ROOT/.config" ||
                 die "NOR SPI clock request changed unexpectedly"
+
             # Ratified 2 MiB NOR map:
             #   0x000000-0x007fff AT91Bootstrap
-            #   0x008000-0x13ffff U-Boot partition
+            #   0x008000-0x13ffef U-Boot payload/slack
+            #   0x13fff0-0x13ffff exact-length trailer
             #   0x140000-0x14ffff env A erase slot
             #   0x150000-0x15ffff env B erase slot
             #   0x160000-0x1fffff spare
             grep -q '^CONFIG_IMG_ADDRESS="0x00008000"$' "$ROOT/.config" ||
                 die "NOR U-Boot address changed unexpectedly"
-            # IMG_SIZE remains the bounded fallback for legacy NOR images.
-            # New images carry an exact U-Boot byte count in the final 16 bytes
-            # of the U-Boot partition so normal boots avoid reading the slack.
-            grep -q '^CONFIG_IMG_SIZE="0x000a0000"            ;;
-    esac
-
-    grep -q '^CONFIG_JUMP_ADDR="0x23f00000"$' "$ROOT/.config" ||
-        die "unexpected U-Boot jump address"
-
-    grep -q '^CONFIG_NEXTGEN_BOOT_FUSE_ENSURE=y$' "$ROOT/.config" ||
-        die "NextGen profile did not enable boot fuse guard"
-
-    echo "Configured NextGen AT91Bootstrap profile: $PROFILE"
-}
-
-build_image()
-{
-    make_bootstrap -j"$JOBS" all
-
-    BOOT="$OUT/binaries/boot.bin"
-    [ -e "$BOOT" ] || die "boot.bin was not produced at $BOOT"
-
-    if [ "$PROFILE" = "nor" ]; then
-        BOOT_BYTES="$(wc -c < "$BOOT" | tr -d '[:space:]')"
-        [ "$BOOT_BYTES" -le $((0x8000)) ] ||
-            die "NOR boot.bin exceeds 32 KiB AT91Bootstrap partition: $BOOT_BYTES bytes"
-    fi
-
-    echo
-    echo "NextGen AT91Bootstrap build complete:"
-    echo "  profile = $PROFILE"
-    echo "  output  = $BOOT"
-    ls -lh "$BOOT"
-    sha256sum "$BOOT"
-}
-
-case "$ACTION" in
-    config)
-        configure
-        ;;
-    build)
-        configure
-        build_image
-        ;;
-    rebuild)
-        rm -rf "$OUT"
-        configure
-        build_image
-        ;;
-    clean)
-        rm -rf "$OUT"
-        echo "Removed $OUT"
-        ;;
-    *)
-        echo "Usage: $0 [build|rebuild|config|clean] [sd|timing|timing-deferred|nor]" >&2
-        exit 2
-        ;;
-esac
- "$ROOT/.config" ||
+            grep -q '^CONFIG_IMG_SIZE="0x00137ff0"$' "$ROOT/.config" ||
                 die "NOR U-Boot fallback load size changed unexpectedly"
-            grep -q '^CONFIG_UBOOT_LENGTH_TRAILER=y            ;;
-    esac
-
-    grep -q '^CONFIG_JUMP_ADDR="0x23f00000"$' "$ROOT/.config" ||
-        die "unexpected U-Boot jump address"
-
-    grep -q '^CONFIG_NEXTGEN_BOOT_FUSE_ENSURE=y$' "$ROOT/.config" ||
-        die "NextGen profile did not enable boot fuse guard"
-
-    echo "Configured NextGen AT91Bootstrap profile: $PROFILE"
-}
-
-build_image()
-{
-    make_bootstrap -j"$JOBS" all
-
-    BOOT="$OUT/binaries/boot.bin"
-    [ -e "$BOOT" ] || die "boot.bin was not produced at $BOOT"
-
-    if [ "$PROFILE" = "nor" ]; then
-        BOOT_BYTES="$(wc -c < "$BOOT" | tr -d '[:space:]')"
-        [ "$BOOT_BYTES" -le $((0x8000)) ] ||
-            die "NOR boot.bin exceeds 32 KiB AT91Bootstrap partition: $BOOT_BYTES bytes"
-    fi
-
-    echo
-    echo "NextGen AT91Bootstrap build complete:"
-    echo "  profile = $PROFILE"
-    echo "  output  = $BOOT"
-    ls -lh "$BOOT"
-    sha256sum "$BOOT"
-}
-
-case "$ACTION" in
-    config)
-        configure
-        ;;
-    build)
-        configure
-        build_image
-        ;;
-    rebuild)
-        rm -rf "$OUT"
-        configure
-        build_image
-        ;;
-    clean)
-        rm -rf "$OUT"
-        echo "Removed $OUT"
-        ;;
-    *)
-        echo "Usage: $0 [build|rebuild|config|clean] [sd|timing|timing-deferred|nor]" >&2
-        exit 2
-        ;;
-esac
- "$ROOT/.config" ||
+            grep -q '^CONFIG_UBOOT_LENGTH_TRAILER=y$' "$ROOT/.config" ||
                 die "NOR U-Boot length trailer is disabled"
-            grep -q '^CONFIG_UBOOT_LENGTH_TRAILER_ADDRESS=0x0013fff0            ;;
-    esac
-
-    grep -q '^CONFIG_JUMP_ADDR="0x23f00000"$' "$ROOT/.config" ||
-        die "unexpected U-Boot jump address"
-
-    grep -q '^CONFIG_NEXTGEN_BOOT_FUSE_ENSURE=y$' "$ROOT/.config" ||
-        die "NextGen profile did not enable boot fuse guard"
-
-    echo "Configured NextGen AT91Bootstrap profile: $PROFILE"
-}
-
-build_image()
-{
-    make_bootstrap -j"$JOBS" all
-
-    BOOT="$OUT/binaries/boot.bin"
-    [ -e "$BOOT" ] || die "boot.bin was not produced at $BOOT"
-
-    if [ "$PROFILE" = "nor" ]; then
-        BOOT_BYTES="$(wc -c < "$BOOT" | tr -d '[:space:]')"
-        [ "$BOOT_BYTES" -le $((0x8000)) ] ||
-            die "NOR boot.bin exceeds 32 KiB AT91Bootstrap partition: $BOOT_BYTES bytes"
-    fi
-
-    echo
-    echo "NextGen AT91Bootstrap build complete:"
-    echo "  profile = $PROFILE"
-    echo "  output  = $BOOT"
-    ls -lh "$BOOT"
-    sha256sum "$BOOT"
-}
-
-case "$ACTION" in
-    config)
-        configure
-        ;;
-    build)
-        configure
-        build_image
-        ;;
-    rebuild)
-        rm -rf "$OUT"
-        configure
-        build_image
-        ;;
-    clean)
-        rm -rf "$OUT"
-        echo "Removed $OUT"
-        ;;
-    *)
-        echo "Usage: $0 [build|rebuild|config|clean] [sd|timing|timing-deferred|nor]" >&2
-        exit 2
-        ;;
-esac
- "$ROOT/.config" ||
+            grep -q '^CONFIG_UBOOT_LENGTH_TRAILER_ADDRESS=0x0013fff0$' "$ROOT/.config" ||
                 die "NOR U-Boot length trailer address changed unexpectedly"
-            grep -q '^CONFIG_UBOOT_MAX_SIZE=0x00137ff0            ;;
-    esac
-
-    grep -q '^CONFIG_JUMP_ADDR="0x23f00000"$' "$ROOT/.config" ||
-        die "unexpected U-Boot jump address"
-
-    grep -q '^CONFIG_NEXTGEN_BOOT_FUSE_ENSURE=y$' "$ROOT/.config" ||
-        die "NextGen profile did not enable boot fuse guard"
-
-    echo "Configured NextGen AT91Bootstrap profile: $PROFILE"
-}
-
-build_image()
-{
-    make_bootstrap -j"$JOBS" all
-
-    BOOT="$OUT/binaries/boot.bin"
-    [ -e "$BOOT" ] || die "boot.bin was not produced at $BOOT"
-
-    if [ "$PROFILE" = "nor" ]; then
-        BOOT_BYTES="$(wc -c < "$BOOT" | tr -d '[:space:]')"
-        [ "$BOOT_BYTES" -le $((0x8000)) ] ||
-            die "NOR boot.bin exceeds 32 KiB AT91Bootstrap partition: $BOOT_BYTES bytes"
-    fi
-
-    echo
-    echo "NextGen AT91Bootstrap build complete:"
-    echo "  profile = $PROFILE"
-    echo "  output  = $BOOT"
-    ls -lh "$BOOT"
-    sha256sum "$BOOT"
-}
-
-case "$ACTION" in
-    config)
-        configure
-        ;;
-    build)
-        configure
-        build_image
-        ;;
-    rebuild)
-        rm -rf "$OUT"
-        configure
-        build_image
-        ;;
-    clean)
-        rm -rf "$OUT"
-        echo "Removed $OUT"
-        ;;
-    *)
-        echo "Usage: $0 [build|rebuild|config|clean] [sd|timing|timing-deferred|nor]" >&2
-        exit 2
-        ;;
-esac
- "$ROOT/.config" ||
+            grep -q '^CONFIG_UBOOT_MAX_SIZE=0x00137ff0$' "$ROOT/.config" ||
                 die "NOR U-Boot maximum payload size changed unexpectedly"
             ;;
     esac
