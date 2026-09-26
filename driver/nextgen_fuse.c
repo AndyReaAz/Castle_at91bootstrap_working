@@ -29,6 +29,7 @@
 #include "board.h"
 #include "debug.h"
 #include "pmc.h"
+#include "pmc/clk-common.h"
 #include "timer.h"
 #include "usart.h"
 #include "nextgen_fuse.h"
